@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { DictionaryEntry } from '../types';
 import { getWords, saveWord, deleteWord } from '../services/store';
 import { generateEntryData } from '../services/geminiService';
-import { Loader2, Plus, Save, Trash2, Wand2, X, Edit2, Search } from 'lucide-react';
+import { Loader2, Plus, Save, Trash2, Wand2, X, Edit2, Search, Languages } from 'lucide-react';
 
 interface AdminPanelProps {
   onClose: () => void;
@@ -11,6 +11,7 @@ interface AdminPanelProps {
 const emptyEntry: DictionaryEntry = {
   id: '',
   word: '',
+  language: 'bn', // Default to Bengali
   translation: '',
   phonetic: '',
   pronunciationBn: '',
@@ -43,7 +44,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
   };
 
   const handleEdit = (entry: DictionaryEntry) => {
-    setEditingEntry({ ...entry });
+    // Ensure legacy data has a language field if missing
+    setEditingEntry({ ...entry, language: entry.language || 'bn' });
   };
 
   const handleCreateNew = () => {
@@ -72,7 +74,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
     }
     setIsLoading(true);
     try {
-      const data = await generateEntryData(editingEntry.word);
+      // Pass the selected language to the AI service
+      const data = await generateEntryData(editingEntry.word, editingEntry.language);
       setEditingEntry(prev => prev ? { ...prev, ...data } : null);
     } catch (e) {
       alert("AI Generation failed. Please try again.");
@@ -85,6 +88,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
 
   // Editor View
   if (editingEntry) {
+    const isEnglish = editingEntry.language === 'en';
+
     return (
       <div className="fixed inset-0 bg-white z-50 overflow-y-auto flex flex-col">
         {/* Editor Header */}
@@ -112,21 +117,39 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
         {/* Editor Form */}
         <div className="max-w-4xl mx-auto w-full p-6 pb-20 space-y-8">
           
+          {/* Language Selection Toggle */}
+          <div className="bg-slate-100 p-1.5 rounded-xl inline-flex w-full md:w-auto">
+             <button 
+                onClick={() => setEditingEntry({...editingEntry, language: 'bn'})}
+                className={`flex-1 md:flex-none px-6 py-2 rounded-lg font-bold text-sm transition-all flex items-center justify-center gap-2 ${!isEnglish ? 'bg-white text-teal-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+             >
+               <span className="font-bengali">বাংলা শব্দ</span>
+             </button>
+             <button 
+                onClick={() => setEditingEntry({...editingEntry, language: 'en'})}
+                className={`flex-1 md:flex-none px-6 py-2 rounded-lg font-bold text-sm transition-all flex items-center justify-center gap-2 ${isEnglish ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+             >
+               <Languages size={16} /> English Word
+             </button>
+          </div>
+
           <div className="flex gap-4 items-end">
             <div className="flex-1 space-y-2">
-              <label className="text-sm font-semibold text-slate-600 uppercase tracking-wider">Main Word (Bengali or English)</label>
+              <label className="text-sm font-semibold text-slate-600 uppercase tracking-wider">
+                {isEnglish ? 'English Word (Main)' : 'মূল শব্দ (বাংলা)'}
+              </label>
               <input 
                 type="text" 
                 value={editingEntry.word}
                 onChange={e => setEditingEntry({...editingEntry, word: e.target.value})}
                 className="w-full p-3 border-2 border-slate-200 rounded-xl text-2xl font-bold focus:border-primary-500 focus:outline-none"
-                placeholder="Enter word here (e.g. সূর্য or Apple)..."
+                placeholder={isEnglish ? "e.g. Knowledge" : "যেমন: সূর্য"}
               />
             </div>
             <button 
               onClick={handleAiGenerate}
               disabled={isLoading || !editingEntry.word}
-              className="mb-1 px-4 py-3 bg-indigo-600 text-white rounded-xl font-medium hover:bg-indigo-700 disabled:opacity-50 flex items-center gap-2 shadow-lg shadow-indigo-200"
+              className={`mb-1 px-4 py-3 text-white rounded-xl font-medium disabled:opacity-50 flex items-center gap-2 shadow-lg transition-colors ${isEnglish ? 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-200' : 'bg-teal-600 hover:bg-teal-700 shadow-teal-200'}`}
             >
               {isLoading ? <Loader2 className="animate-spin" size={20}/> : <Wand2 size={20} />}
               Auto-Fill
@@ -135,12 +158,14 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-slate-600">Translation / অনুবাদ</label>
+              <label className="text-sm font-semibold text-slate-600">
+                {isEnglish ? 'Bengali Meaning (Short)' : 'English Translation'}
+              </label>
               <input 
                 value={editingEntry.translation}
                 onChange={e => setEditingEntry({...editingEntry, translation: e.target.value})}
                 className="w-full p-3 border border-slate-200 rounded-xl focus:border-primary-500 font-bold"
-                placeholder="English equivalent or Bengali Meaning"
+                placeholder={isEnglish ? "জ্ঞান" : "Sun"}
               />
             </div>
              <div className="space-y-2">
@@ -155,12 +180,14 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-slate-600">Pronunciation (বাংলা উচ্চারণ)</label>
+              <label className="text-sm font-semibold text-slate-600">
+                 {isEnglish ? 'Pronunciation (বাংলায় উচ্চারণ)' : 'উচ্চারণ (বাংলা)'}
+              </label>
               <input 
                 value={editingEntry.pronunciationBn}
                 onChange={e => setEditingEntry({...editingEntry, pronunciationBn: e.target.value})}
                 className="w-full p-3 border border-slate-200 rounded-xl focus:border-primary-500 font-bengali"
-                placeholder="e.g. অ্যাপল or সূর্য"
+                placeholder={isEnglish ? "নলেজ" : "সূর-জো"}
               />
             </div>
             <div className="space-y-2">
@@ -173,9 +200,11 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
             </div>
           </div>
 
-          {/* Grammar Section */}
-          <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200 space-y-6">
-            <h3 className="font-bold text-slate-500 uppercase tracking-wider text-sm border-b pb-2 border-slate-200">Linguistics / ব্যাকরণ</h3>
+          {/* Grammar Section - Conditionally Rendered based on Language */}
+          <div className={`bg-slate-50 p-6 rounded-2xl border border-slate-200 space-y-6 ${isEnglish ? 'border-dashed' : ''}`}>
+            <h3 className="font-bold text-slate-500 uppercase tracking-wider text-sm border-b pb-2 border-slate-200">
+               {isEnglish ? 'Origin & Source' : 'Linguistics / ব্যাকরণ'}
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                <div className="space-y-2">
                 <label className="text-sm font-semibold text-slate-600">Etymology (ব্যুৎপত্তি)</label>
@@ -183,34 +212,39 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
                   value={editingEntry.etymology || ''}
                   onChange={e => setEditingEntry({...editingEntry, etymology: e.target.value})}
                   className="w-full p-3 border border-slate-200 rounded-xl focus:border-primary-500 font-bengali"
-                  placeholder="e.g. ন + জ্ঞান"
                 />
               </div>
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-600">Sandhi (সন্ধি) - Optional</label>
-                <input 
-                  value={editingEntry.sandhi || ''}
-                  onChange={e => setEditingEntry({...editingEntry, sandhi: e.target.value})}
-                  className="w-full p-3 border border-slate-200 rounded-xl focus:border-primary-500 font-bengali"
-                  placeholder="e.g. বিদ্যা + আলয়"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-600">Samas (সমাস) - Optional</label>
-                <input 
-                  value={editingEntry.samas || ''}
-                  onChange={e => setEditingEntry({...editingEntry, samas: e.target.value})}
-                  className="w-full p-3 border border-slate-200 rounded-xl focus:border-primary-500 font-bengali"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
+
+              {/* Only show Sandhi/Samas for Bengali words */}
+              {!isEnglish && (
+                <>
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-slate-600">Sandhi (সন্ধি)</label>
+                    <input 
+                      value={editingEntry.sandhi || ''}
+                      onChange={e => setEditingEntry({...editingEntry, sandhi: e.target.value})}
+                      className="w-full p-3 border border-slate-200 rounded-xl focus:border-primary-500 font-bengali"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-slate-600">Samas (সমাস)</label>
+                    <input 
+                      value={editingEntry.samas || ''}
+                      onChange={e => setEditingEntry({...editingEntry, samas: e.target.value})}
+                      className="w-full p-3 border border-slate-200 rounded-xl focus:border-primary-500 font-bengali"
+                    />
+                  </div>
+                </>
+              )}
+
+              <div className="grid grid-cols-2 gap-4 col-span-1 md:col-span-2">
                  <div className="space-y-2">
                     <label className="text-sm font-semibold text-slate-600">Source (উৎস)</label>
                     <input 
                       value={editingEntry.source || ''}
                       onChange={e => setEditingEntry({...editingEntry, source: e.target.value})}
                       className="w-full p-3 border border-slate-200 rounded-xl focus:border-primary-500 font-bengali"
-                      placeholder="e.g. তৎসম / ইংরেজি"
+                      placeholder={isEnglish ? "ইংরেজি" : "তৎসম / তদ্ভব"}
                     />
                   </div>
                    <div className="space-y-2">
@@ -231,7 +265,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
               value={editingEntry.meaning}
               onChange={e => setEditingEntry({...editingEntry, meaning: e.target.value})}
               className="w-full p-3 border border-slate-200 rounded-xl focus:border-primary-500 h-24 font-bengali text-lg"
-              placeholder="Primary definition in Bengali"
+              placeholder="Detailed Bengali definition"
             />
           </div>
 
@@ -310,6 +344,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
             <thead className="bg-slate-50 sticky top-0 border-b border-slate-200">
               <tr>
                 <th className="p-4 font-semibold text-slate-600">Word</th>
+                <th className="p-4 font-semibold text-slate-600">Type</th>
                 <th className="p-4 font-semibold text-slate-600">Meaning</th>
                 <th className="p-4 font-semibold text-slate-600 text-right">Actions</th>
               </tr>
@@ -317,7 +352,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
             <tbody className="divide-y divide-slate-100">
               {filteredWords.length === 0 ? (
                 <tr>
-                  <td colSpan={3} className="p-10 text-center text-slate-400">
+                  <td colSpan={4} className="p-10 text-center text-slate-400">
                     No words found. Add some words!
                   </td>
                 </tr>
@@ -325,6 +360,11 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
                 filteredWords.map(word => (
                   <tr key={word.id} className="hover:bg-slate-50 group transition-colors">
                     <td className="p-4 font-medium text-slate-800 font-bengali text-lg">{word.word}</td>
+                    <td className="p-4">
+                      <span className={`text-[10px] font-bold px-2 py-1 rounded-full uppercase ${word.language === 'en' ? 'bg-indigo-50 text-indigo-600' : 'bg-teal-50 text-teal-600'}`}>
+                        {word.language === 'en' ? 'Eng' : 'Ban'}
+                      </span>
+                    </td>
                     <td className="p-4 text-slate-500 font-bengali truncate max-w-xs">{word.meaning}</td>
                     <td className="p-4 text-right">
                       <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">

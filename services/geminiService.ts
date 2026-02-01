@@ -3,40 +3,43 @@ import { DictionaryEntry } from "../types";
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
-export const generateEntryData = async (word: string): Promise<Omit<DictionaryEntry, 'id'>> => {
+export const generateEntryData = async (word: string, language: 'bn' | 'en'): Promise<Omit<DictionaryEntry, 'id' | 'language'>> => {
   const model = "gemini-3-flash-preview";
+
+  const prompt = `You are a specialized bilingual dictionary content generator.
+  The user wants to add a **${language === 'bn' ? 'BENGALI' : 'ENGLISH'}** word to the dictionary.
+  Word: "${word}"
+
+  INSTRUCTIONS:
+  ${language === 'bn' ? `
+  Target: BENGALI WORD.
+  - 'translation': Provide the English equivalent.
+  - 'pronunciationBn': The Bengali pronunciation.
+  - 'meaning': Definition in Bengali.
+  - 'partOfSpeech': Grammatical part of speech in Bengali (e.g., বিশেষ্য).
+  - 'sandhi', 'samas': Fill if applicable.
+  ` : `
+  Target: ENGLISH WORD.
+  - 'translation': Provide the Bengali equivalent (Short Meaning).
+  - 'pronunciationBn': Write the English pronunciation in Bengali script (e.g., Apple -> অ্যাপল).
+  - 'meaning': Detailed definition in Bengali.
+  - 'partOfSpeech': Part of speech in Bengali (e.g., Noun -> বিশেষ্য).
+  - 'sandhi', 'samas': Leave empty strings.
+  - 'source': Set to 'বিদেশি' or 'ইংরেজি'.
+  `}
+
+  GENERAL FIELDS:
+  - 'phonetic': IPA notation.
+  - 'description': Comprehensive description in Bengali.
+  - 'etymology': Origin/Root of the word (in Bengali script if possible).
+  - 'synonyms': List of synonyms.
+  - 'antonyms': List of antonyms.
+  - 'examples': Usage examples in Bengali sentences (if word is English, provide English sentence with Bengali translation in brackets).
+  `;
 
   const response = await ai.models.generateContent({
     model,
-    contents: `You are a specialized bilingual dictionary content generator (Bengali <-> English). 
-    Create a highly detailed dictionary entry for the word: "${word}".
-    
-    INSTRUCTIONS:
-    1. Detect if the input word is Bengali or English.
-    
-    IF BENGALI:
-    - 'translation': Provide the English equivalent.
-    - 'pronunciationBn': The Bengali pronunciation script/spelling if complex, or just the word.
-    - 'meaning': Definition in Bengali.
-    - 'partOfSpeech': Grammatical part of speech in Bengali (e.g., বিশেষ্য).
-    - 'sandhi', 'samas': Fill if applicable.
-    
-    IF ENGLISH:
-    - 'translation': Provide the Bengali equivalent (Meaning in short).
-    - 'pronunciationBn': Write the English pronunciation in Bengali script (e.g., Apple -> অ্যাপল).
-    - 'meaning': Detailed definition in Bengali.
-    - 'partOfSpeech': Part of speech in Bengali (e.g., Noun -> বিশেষ্য).
-    - 'sandhi', 'samas': Leave empty.
-    - 'source': Set to 'বিদেশি' or 'ইংরেজি'.
-    
-    GENERAL FIELDS:
-    - 'phonetic': IPA notation.
-    - 'description': Comprehensive description in Bengali.
-    - 'etymology': Origin/Root of the word (in Bengali script if possible).
-    - 'synonyms': List of synonyms (in same language as input word or mixed).
-    - 'antonyms': List of antonyms.
-    - 'examples': Usage examples in Bengali sentences (if word is English, show usage in a Bengali sentence or English sentence with Bengali meaning).
-    `,
+    contents: prompt,
     config: {
       responseMimeType: "application/json",
       responseSchema: {
@@ -66,5 +69,5 @@ export const generateEntryData = async (word: string): Promise<Omit<DictionaryEn
   const text = response.text;
   if (!text) throw new Error("No response from AI");
 
-  return JSON.parse(text) as Omit<DictionaryEntry, 'id'>;
+  return JSON.parse(text) as Omit<DictionaryEntry, 'id' | 'language'>;
 };

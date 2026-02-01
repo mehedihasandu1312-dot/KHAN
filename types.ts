@@ -1,6 +1,7 @@
 export interface DictionaryEntry {
   id: string;
   word: string; // The main word (e.g., "Apple")
+  language: 'bn' | 'en'; // Explicit language tag
   translation: string; // The direct equivalent / পরিভাষা
   phonetic: string; // IPA
   pronunciationBn: string; // উচ্চারণ

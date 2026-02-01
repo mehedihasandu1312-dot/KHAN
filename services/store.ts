@@ -8,6 +8,7 @@ const SEED_DATA: DictionaryEntry[] = [
   {
     id: '1',
     word: 'অজ্ঞান',
+    language: 'bn',
     translation: 'Unconscious / Ignorant',
     phonetic: '/ɔɡ.ɡæn/',
     pronunciationBn: 'অগ্‌গাঁ',
@@ -29,6 +30,7 @@ const SEED_DATA: DictionaryEntry[] = [
   {
     id: '2',
     word: 'বিদ্যালয়',
+    language: 'bn',
     translation: 'School',
     phonetic: '/bid.da.lɔe/',
     pronunciationBn: 'বিদ্-দা-লয়',
