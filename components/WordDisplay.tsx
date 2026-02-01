@@ -1,6 +1,6 @@
 import React from 'react';
 import { DictionaryEntry } from '../types';
-import { Volume2, Star, Share2, Copy, BookOpen, GitBranch, Split, Feather, MoveRight } from 'lucide-react';
+import { Volume2, Star, Share2, Copy, BookOpen, GitBranch, Split, Feather, MoveRight, Layers, MessageSquareQuote } from 'lucide-react';
 
 interface WordDisplayProps {
   data: DictionaryEntry;
@@ -11,10 +11,11 @@ interface WordDisplayProps {
 
 const WordDisplay: React.FC<WordDisplayProps> = ({ data, onSpeak, onToggleFavorite, isFavorite }) => {
   
+  const isEnglish = data.language === 'en';
+
   // Helper to copy text
   const handleCopy = () => {
     navigator.clipboard.writeText(`${data.word} - ${data.meaning}`);
-    // Optional: Show toast
   };
 
   return (
@@ -77,7 +78,9 @@ const WordDisplay: React.FC<WordDisplayProps> = ({ data, onSpeak, onToggleFavori
                </p>
              </div>
              <div className="pt-3 border-t border-slate-200">
-               <h3 className="text-xs font-bold text-slate-400 uppercase mb-1">অনুবাদ / Translation</h3>
+               <h3 className="text-xs font-bold text-slate-400 uppercase mb-1">
+                 {isEnglish ? 'বাংলা অনুবাদ / Bengali' : 'অনুবাদ / English'}
+               </h3>
                <p className="text-lg font-medium text-slate-700 font-sans">
                  {data.translation}
                </p>
@@ -89,7 +92,7 @@ const WordDisplay: React.FC<WordDisplayProps> = ({ data, onSpeak, onToggleFavori
       {/* 2. MAIN CONTENT AREA */}
       <div className="px-5 py-6 space-y-6">
 
-        {/* Detailed Description (if different from meaning) */}
+        {/* Detailed Description */}
         {data.description && data.description !== data.meaning && (
           <div className="prose prose-slate max-w-none">
              <h3 className="flex items-center gap-2 text-sm font-bold text-slate-900 uppercase tracking-wider mb-2">
@@ -101,17 +104,31 @@ const WordDisplay: React.FC<WordDisplayProps> = ({ data, onSpeak, onToggleFavori
           </div>
         )}
 
-        {/* Grammar & Etymology Grid */}
+        {/* Grammar & Linguistics Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           
-          {/* Grammar Box - Conditional Render based on content */}
-          {(data.sandhi || data.samas) && (
+          {/* ENGLISH: Word Forms (Inflections) */}
+          {isEnglish && data.inflections && (
+            <div className="bg-white p-5 rounded-xl border border-indigo-100 shadow-sm relative overflow-hidden">
+               <div className="absolute top-0 right-0 w-16 h-16 bg-indigo-50 rounded-bl-full -mr-4 -mt-4 z-0"></div>
+               <h3 className="relative z-10 flex items-center gap-2 text-sm font-bold text-indigo-900 uppercase tracking-wider mb-4">
+                 <Layers size={16} className="text-indigo-600" /> শব্দরূপ (Word Forms)
+               </h3>
+               <div className="relative z-10">
+                 <p className="text-lg font-medium text-slate-800 bg-indigo-50/50 p-3 rounded-lg border border-indigo-50">
+                   {data.inflections}
+                 </p>
+               </div>
+            </div>
+          )}
+
+          {/* BENGALI: Sandhi/Samas */}
+          {!isEnglish && (data.sandhi || data.samas) && (
             <div className="bg-white p-5 rounded-xl border border-indigo-100 shadow-sm relative overflow-hidden">
                <div className="absolute top-0 right-0 w-16 h-16 bg-indigo-50 rounded-bl-full -mr-4 -mt-4 z-0"></div>
                <h3 className="relative z-10 flex items-center gap-2 text-sm font-bold text-indigo-900 uppercase tracking-wider mb-4">
                  <Split size={16} className="text-indigo-600" /> ব্যাকরণ পাঠ
                </h3>
-               
                <div className="relative z-10 space-y-4">
                  {data.sandhi && (
                    <div>
@@ -133,26 +150,27 @@ const WordDisplay: React.FC<WordDisplayProps> = ({ data, onSpeak, onToggleFavori
             </div>
           )}
 
-          {/* Etymology Box */}
+          {/* Etymology / Source (Both Languages) */}
           {(data.source || data.etymology || data.sourceWord) && (
              <div className="bg-white p-5 rounded-xl border border-amber-100 shadow-sm relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-16 h-16 bg-amber-50 rounded-bl-full -mr-4 -mt-4 z-0"></div>
                 <h3 className="relative z-10 flex items-center gap-2 text-sm font-bold text-amber-900 uppercase tracking-wider mb-4">
-                  <GitBranch size={16} className="text-amber-600" /> শব্দ উৎস (Origin)
+                  <GitBranch size={16} className="text-amber-600" /> 
+                  {isEnglish ? 'Origin & Type' : 'শব্দ উৎস (Origin)'}
                 </h3>
 
                 <div className="relative z-10 space-y-3">
                    {data.source && (
                      <div className="flex items-center gap-2">
                         <span className="w-2 h-2 rounded-full bg-amber-400"></span>
-                        <span className="text-slate-500 text-sm">উৎস/শ্রেণি:</span>
+                        <span className="text-slate-500 text-sm">Type/উৎস:</span>
                         <span className="font-bold text-slate-800 font-bengali">{data.source}</span>
                      </div>
                    )}
                    {data.sourceWord && (
                      <div className="flex items-center gap-2">
                         <span className="w-2 h-2 rounded-full bg-amber-400"></span>
-                        <span className="text-slate-500 text-sm">মূল শব্দ:</span>
+                        <span className="text-slate-500 text-sm">Root/মূল:</span>
                         <span className="font-bold text-slate-800 font-bengali">{data.sourceWord}</span>
                      </div>
                    )}
@@ -168,17 +186,34 @@ const WordDisplay: React.FC<WordDisplayProps> = ({ data, onSpeak, onToggleFavori
           )}
         </div>
 
+        {/* Phrases / Idioms (English Specific) */}
+        {isEnglish && data.relatedPhrases && data.relatedPhrases.length > 0 && (
+          <div className="bg-white p-5 rounded-xl border border-teal-100 shadow-sm">
+             <h3 className="flex items-center gap-2 text-sm font-bold text-teal-800 uppercase tracking-wider mb-3">
+               <MessageSquareQuote size={16} className="text-teal-600" /> Phrases & Idioms
+             </h3>
+             <div className="space-y-2">
+               {data.relatedPhrases.map((phrase, i) => (
+                 <div key={i} className="flex items-start gap-2">
+                   <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-teal-400"></span>
+                   <p className="text-slate-700 font-medium text-lg">{phrase}</p>
+                 </div>
+               ))}
+             </div>
+          </div>
+        )}
+
         {/* Examples Section */}
         {data.examples?.length > 0 && (
           <div>
             <h3 className="flex items-center gap-2 text-sm font-bold text-slate-900 uppercase tracking-wider mb-3 px-1">
-               ব্যবহারিক উদাহরণ
+               ব্যবহারিক উদাহরণ (Examples)
             </h3>
             <div className="space-y-3">
               {data.examples.map((ex, i) => (
                 <div key={i} className="flex gap-3 bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:border-teal-200 transition-colors">
                   <div className="min-w-[4px] bg-teal-500 rounded-full"></div>
-                  <p className="text-slate-700 font-bengali text-lg leading-relaxed">
+                  <p className="text-slate-700 font-bengali text-lg leading-relaxed whitespace-pre-line">
                     {ex}
                   </p>
                 </div>

@@ -25,6 +25,8 @@ const emptyEntry: DictionaryEntry = {
   etymology: '',
   sandhi: '',
   samas: '',
+  inflections: '',
+  relatedPhrases: [],
   source: '',
   sourceWord: ''
 };
@@ -45,7 +47,12 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
 
   const handleEdit = (entry: DictionaryEntry) => {
     // Ensure legacy data has a language field if missing
-    setEditingEntry({ ...entry, language: entry.language || 'bn' });
+    setEditingEntry({ 
+      ...emptyEntry, // merge with empty to ensure new fields exist
+      ...entry, 
+      language: entry.language || 'bn',
+      relatedPhrases: entry.relatedPhrases || []
+    });
   };
 
   const handleCreateNew = () => {
@@ -200,10 +207,10 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
             </div>
           </div>
 
-          {/* Grammar Section - Conditionally Rendered based on Language */}
+          {/* Grammar Section - DYNAMIC */}
           <div className={`bg-slate-50 p-6 rounded-2xl border border-slate-200 space-y-6 ${isEnglish ? 'border-dashed' : ''}`}>
             <h3 className="font-bold text-slate-500 uppercase tracking-wider text-sm border-b pb-2 border-slate-200">
-               {isEnglish ? 'Origin & Source' : 'Linguistics / ব্যাকরণ'}
+               {isEnglish ? 'English Grammar' : 'Bengali Grammar / ব্যাকরণ'}
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                <div className="space-y-2">
@@ -215,7 +222,31 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
                 />
               </div>
 
-              {/* Only show Sandhi/Samas for Bengali words */}
+              {/* ENGLISH FIELDS */}
+              {isEnglish && (
+                <>
+                  <div className="col-span-1 md:col-span-2 space-y-2">
+                    <label className="text-sm font-semibold text-slate-600">Word Forms (V1, V2, V3 or Plural)</label>
+                    <input 
+                      value={editingEntry.inflections || ''}
+                      onChange={e => setEditingEntry({...editingEntry, inflections: e.target.value})}
+                      className="w-full p-3 border border-slate-200 rounded-xl focus:border-primary-500"
+                      placeholder="e.g. Go -> Went, Gone"
+                    />
+                  </div>
+                  <div className="col-span-1 md:col-span-2 space-y-2">
+                    <label className="text-sm font-semibold text-slate-600">Phrases / Idioms (Comma separated)</label>
+                    <textarea 
+                      value={editingEntry.relatedPhrases?.join('\n') || ''}
+                      onChange={e => setEditingEntry({...editingEntry, relatedPhrases: e.target.value.split('\n').filter(Boolean)})}
+                      className="w-full p-3 border border-slate-200 rounded-xl focus:border-primary-500"
+                      placeholder="One per line (e.g. Give up)"
+                    />
+                  </div>
+                </>
+              )}
+
+              {/* BENGALI FIELDS */}
               {!isEnglish && (
                 <>
                   <div className="space-y-2">
@@ -237,6 +268,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
                 </>
               )}
 
+              {/* Common Source Fields */}
               <div className="grid grid-cols-2 gap-4 col-span-1 md:col-span-2">
                  <div className="space-y-2">
                     <label className="text-sm font-semibold text-slate-600">Source (উৎস)</label>
@@ -302,6 +334,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
               value={editingEntry.examples.join('\n')}
               onChange={e => setEditingEntry({...editingEntry, examples: e.target.value.split('\n')})}
               className="w-full p-3 border border-slate-200 rounded-xl focus:border-primary-500 h-32 font-bengali"
+              placeholder={isEnglish ? "Example in English (Bengali Meaning)" : "উদাহরণ"}
             />
           </div>
         </div>

@@ -24,8 +24,10 @@ export const generateEntryData = async (word: string, language: 'bn' | 'en'): Pr
   - 'pronunciationBn': Write the English pronunciation in Bengali script (e.g., Apple -> অ্যাপল).
   - 'meaning': Detailed definition in Bengali.
   - 'partOfSpeech': Part of speech in Bengali (e.g., Noun -> বিশেষ্য).
-  - 'sandhi', 'samas': Leave empty strings.
+  - 'inflections': If Verb, give V1, V2, V3 forms (e.g., Go - Went - Gone). If Noun, give Plural. If Adjective, give degrees.
+  - 'relatedPhrases': List 2-3 common idioms or phrasal verbs using this word (e.g. for 'Give': 'Give up', 'Give in').
   - 'source': Set to 'বিদেশি' or 'ইংরেজি'.
+  - 'sandhi', 'samas': Leave empty strings.
   `}
 
   GENERAL FIELDS:
@@ -34,7 +36,7 @@ export const generateEntryData = async (word: string, language: 'bn' | 'en'): Pr
   - 'etymology': Origin/Root of the word (in Bengali script if possible).
   - 'synonyms': List of synonyms.
   - 'antonyms': List of antonyms.
-  - 'examples': Usage examples in Bengali sentences (if word is English, provide English sentence with Bengali translation in brackets).
+  - 'examples': Usage examples. If the word is English, provide the English sentence followed by Bengali translation in parentheses/brackets.
   `;
 
   const response = await ai.models.generateContent({
@@ -53,8 +55,13 @@ export const generateEntryData = async (word: string, language: 'bn' | 'en'): Pr
           meaning: { type: Type.STRING, description: "Primary definition in Bengali" },
           description: { type: Type.STRING },
           etymology: { type: Type.STRING, description: "Origin/History" },
+          
           sandhi: { type: Type.STRING, description: "Sandhi (if Bengali)" },
           samas: { type: Type.STRING, description: "Samas (if Bengali)" },
+          
+          inflections: { type: Type.STRING, description: "Word forms (Past tense, Plural etc) for English" },
+          relatedPhrases: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Idioms or Phrasal Verbs" },
+
           source: { type: Type.STRING, description: "Source type" },
           sourceWord: { type: Type.STRING, description: "Root word" },
           synonyms: { type: Type.ARRAY, items: { type: Type.STRING } },

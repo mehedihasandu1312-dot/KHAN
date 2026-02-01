@@ -11,10 +11,15 @@ export interface DictionaryEntry {
   meaning: string; // অর্থ
   description: string; // বিস্তারিত বিবরণ
   
-  // Linguistics (New Fields)
+  // Linguistics (Bengali Specific)
   etymology?: string; // ব্যুৎপত্তি
   sandhi?: string; // সন্ধি
   samas?: string; // সমাস
+  
+  // English Specific
+  inflections?: string; // Word forms (e.g. Go -> Went, Gone or Child -> Children)
+  relatedPhrases?: string[]; // Idioms/Phrasal verbs (e.g. Give up)
+
   source?: string; // উৎস (e.g., তৎসম, তদ্ভব)
   sourceWord?: string; // উৎস শব্দ
   
