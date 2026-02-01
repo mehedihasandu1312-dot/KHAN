@@ -3,37 +3,62 @@ import { DictionaryEntry } from "../types";
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
-// Renamed to reflect its new purpose: assisting the Admin
 export const generateEntryData = async (word: string): Promise<Omit<DictionaryEntry, 'id'>> => {
   const model = "gemini-3-flash-preview";
 
   const response = await ai.models.generateContent({
     model,
-    contents: `You are a dictionary content generator. 
-    Create a detailed dictionary entry for the word: "${word}".
+    contents: `You are a specialized bilingual dictionary content generator (Bengali <-> English). 
+    Create a highly detailed dictionary entry for the word: "${word}".
     
-    If the input is English, provide Bengali translations.
-    If the input is Bengali, provide English translations where appropriate.
+    INSTRUCTIONS:
+    1. Detect if the input word is Bengali or English.
     
-    Ensure the 'meaning' is concise.
-    'description' should be detailed.
+    IF BENGALI:
+    - 'translation': Provide the English equivalent.
+    - 'pronunciationBn': The Bengali pronunciation script/spelling if complex, or just the word.
+    - 'meaning': Definition in Bengali.
+    - 'partOfSpeech': Grammatical part of speech in Bengali (e.g., বিশেষ্য).
+    - 'sandhi', 'samas': Fill if applicable.
+    
+    IF ENGLISH:
+    - 'translation': Provide the Bengali equivalent (Meaning in short).
+    - 'pronunciationBn': Write the English pronunciation in Bengali script (e.g., Apple -> অ্যাপল).
+    - 'meaning': Detailed definition in Bengali.
+    - 'partOfSpeech': Part of speech in Bengali (e.g., Noun -> বিশেষ্য).
+    - 'sandhi', 'samas': Leave empty.
+    - 'source': Set to 'বিদেশি' or 'ইংরেজি'.
+    
+    GENERAL FIELDS:
+    - 'phonetic': IPA notation.
+    - 'description': Comprehensive description in Bengali.
+    - 'etymology': Origin/Root of the word (in Bengali script if possible).
+    - 'synonyms': List of synonyms (in same language as input word or mixed).
+    - 'antonyms': List of antonyms.
+    - 'examples': Usage examples in Bengali sentences (if word is English, show usage in a Bengali sentence or English sentence with Bengali meaning).
     `,
     config: {
       responseMimeType: "application/json",
       responseSchema: {
         type: Type.OBJECT,
         properties: {
-          word: { type: Type.STRING, description: "The word, capitalized." },
-          phonetic: { type: Type.STRING, description: "IPA pronunciation" },
-          partOfSpeech: { type: Type.STRING, description: "e.g., Noun (বিশেষ্য)" },
-          meaning: { type: Type.STRING, description: "Primary meaning" },
-          description: { type: Type.STRING, description: "Detailed description" },
-          synonyms: { type: Type.ARRAY, items: { type: Type.STRING }, description: "List of synonyms" },
-          antonyms: { type: Type.ARRAY, items: { type: Type.STRING }, description: "List of antonyms" },
-          examples: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Bilingual example sentences" },
-          origin: { type: Type.STRING, description: "Etymology" }
+          word: { type: Type.STRING },
+          translation: { type: Type.STRING, description: "Translation in the other language" },
+          phonetic: { type: Type.STRING },
+          pronunciationBn: { type: Type.STRING, description: "Bengali pronunciation/transliteration" },
+          partOfSpeech: { type: Type.STRING },
+          meaning: { type: Type.STRING, description: "Primary definition in Bengali" },
+          description: { type: Type.STRING },
+          etymology: { type: Type.STRING, description: "Origin/History" },
+          sandhi: { type: Type.STRING, description: "Sandhi (if Bengali)" },
+          samas: { type: Type.STRING, description: "Samas (if Bengali)" },
+          source: { type: Type.STRING, description: "Source type" },
+          sourceWord: { type: Type.STRING, description: "Root word" },
+          synonyms: { type: Type.ARRAY, items: { type: Type.STRING } },
+          antonyms: { type: Type.ARRAY, items: { type: Type.STRING } },
+          examples: { type: Type.ARRAY, items: { type: Type.STRING } },
         },
-        required: ["word", "phonetic", "partOfSpeech", "meaning", "description", "synonyms", "examples"],
+        required: ["word", "translation", "partOfSpeech", "meaning", "description", "synonyms", "examples"],
       },
     },
   });

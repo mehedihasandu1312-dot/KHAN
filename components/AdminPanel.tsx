@@ -11,14 +11,21 @@ interface AdminPanelProps {
 const emptyEntry: DictionaryEntry = {
   id: '',
   word: '',
+  translation: '',
   phonetic: '',
+  pronunciationBn: '',
   partOfSpeech: '',
   meaning: '',
   description: '',
   synonyms: [],
   antonyms: [],
   examples: [],
-  origin: ''
+  origin: '',
+  etymology: '',
+  sandhi: '',
+  samas: '',
+  source: '',
+  sourceWord: ''
 };
 
 const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
@@ -103,17 +110,17 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
         </div>
 
         {/* Editor Form */}
-        <div className="max-w-3xl mx-auto w-full p-6 pb-20 space-y-6">
+        <div className="max-w-4xl mx-auto w-full p-6 pb-20 space-y-8">
           
           <div className="flex gap-4 items-end">
             <div className="flex-1 space-y-2">
-              <label className="text-sm font-semibold text-slate-600 uppercase tracking-wider">Word</label>
+              <label className="text-sm font-semibold text-slate-600 uppercase tracking-wider">Main Word (Bengali or English)</label>
               <input 
                 type="text" 
                 value={editingEntry.word}
                 onChange={e => setEditingEntry({...editingEntry, word: e.target.value})}
-                className="w-full p-3 border-2 border-slate-200 rounded-xl text-xl font-bold focus:border-primary-500 focus:outline-none"
-                placeholder="Enter word here..."
+                className="w-full p-3 border-2 border-slate-200 rounded-xl text-2xl font-bold focus:border-primary-500 focus:outline-none"
+                placeholder="Enter word here (e.g. সূর্য or Apple)..."
               />
             </div>
             <button 
@@ -122,74 +129,146 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
               className="mb-1 px-4 py-3 bg-indigo-600 text-white rounded-xl font-medium hover:bg-indigo-700 disabled:opacity-50 flex items-center gap-2 shadow-lg shadow-indigo-200"
             >
               {isLoading ? <Loader2 className="animate-spin" size={20}/> : <Wand2 size={20} />}
-              Auto-Fill with AI
+              Auto-Fill
             </button>
           </div>
 
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-slate-600">Phonetic (IPA)</label>
+              <label className="text-sm font-semibold text-slate-600">Translation / অনুবাদ</label>
               <input 
-                value={editingEntry.phonetic}
-                onChange={e => setEditingEntry({...editingEntry, phonetic: e.target.value})}
-                className="w-full p-3 border border-slate-200 rounded-xl focus:border-primary-500 outline-none"
+                value={editingEntry.translation}
+                onChange={e => setEditingEntry({...editingEntry, translation: e.target.value})}
+                className="w-full p-3 border border-slate-200 rounded-xl focus:border-primary-500 font-bold"
+                placeholder="English equivalent or Bengali Meaning"
               />
             </div>
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-slate-600">Part of Speech</label>
+             <div className="space-y-2">
+              <label className="text-sm font-semibold text-slate-600">Part of Speech (পদ)</label>
               <input 
                 value={editingEntry.partOfSpeech}
                 onChange={e => setEditingEntry({...editingEntry, partOfSpeech: e.target.value})}
-                className="w-full p-3 border border-slate-200 rounded-xl focus:border-primary-500 outline-none font-bengali"
+                className="w-full p-3 border border-slate-200 rounded-xl focus:border-primary-500 font-bengali"
               />
             </div>
           </div>
 
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-slate-600">Pronunciation (বাংলা উচ্চারণ)</label>
+              <input 
+                value={editingEntry.pronunciationBn}
+                onChange={e => setEditingEntry({...editingEntry, pronunciationBn: e.target.value})}
+                className="w-full p-3 border border-slate-200 rounded-xl focus:border-primary-500 font-bengali"
+                placeholder="e.g. অ্যাপল or সূর্য"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-slate-600">IPA Phonetic</label>
+              <input 
+                value={editingEntry.phonetic}
+                onChange={e => setEditingEntry({...editingEntry, phonetic: e.target.value})}
+                className="w-full p-3 border border-slate-200 rounded-xl focus:border-primary-500 font-mono"
+              />
+            </div>
+          </div>
+
+          {/* Grammar Section */}
+          <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200 space-y-6">
+            <h3 className="font-bold text-slate-500 uppercase tracking-wider text-sm border-b pb-2 border-slate-200">Linguistics / ব্যাকরণ</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+               <div className="space-y-2">
+                <label className="text-sm font-semibold text-slate-600">Etymology (ব্যুৎপত্তি)</label>
+                <input 
+                  value={editingEntry.etymology || ''}
+                  onChange={e => setEditingEntry({...editingEntry, etymology: e.target.value})}
+                  className="w-full p-3 border border-slate-200 rounded-xl focus:border-primary-500 font-bengali"
+                  placeholder="e.g. ন + জ্ঞান"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-slate-600">Sandhi (সন্ধি) - Optional</label>
+                <input 
+                  value={editingEntry.sandhi || ''}
+                  onChange={e => setEditingEntry({...editingEntry, sandhi: e.target.value})}
+                  className="w-full p-3 border border-slate-200 rounded-xl focus:border-primary-500 font-bengali"
+                  placeholder="e.g. বিদ্যা + আলয়"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-slate-600">Samas (সমাস) - Optional</label>
+                <input 
+                  value={editingEntry.samas || ''}
+                  onChange={e => setEditingEntry({...editingEntry, samas: e.target.value})}
+                  className="w-full p-3 border border-slate-200 rounded-xl focus:border-primary-500 font-bengali"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                 <div className="space-y-2">
+                    <label className="text-sm font-semibold text-slate-600">Source (উৎস)</label>
+                    <input 
+                      value={editingEntry.source || ''}
+                      onChange={e => setEditingEntry({...editingEntry, source: e.target.value})}
+                      className="w-full p-3 border border-slate-200 rounded-xl focus:border-primary-500 font-bengali"
+                      placeholder="e.g. তৎসম / ইংরেজি"
+                    />
+                  </div>
+                   <div className="space-y-2">
+                    <label className="text-sm font-semibold text-slate-600">Root Word (উৎস শব্দ)</label>
+                    <input 
+                      value={editingEntry.sourceWord || ''}
+                      onChange={e => setEditingEntry({...editingEntry, sourceWord: e.target.value})}
+                      className="w-full p-3 border border-slate-200 rounded-xl focus:border-primary-500 font-bengali"
+                    />
+                  </div>
+              </div>
+            </div>
+          </div>
+
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-slate-600">Short Meaning</label>
-            <input 
+            <label className="text-sm font-semibold text-slate-600">Meaning (অর্থ)</label>
+            <textarea 
               value={editingEntry.meaning}
               onChange={e => setEditingEntry({...editingEntry, meaning: e.target.value})}
-              className="w-full p-3 border border-slate-200 rounded-xl focus:border-primary-500 outline-none font-bengali text-lg"
+              className="w-full p-3 border border-slate-200 rounded-xl focus:border-primary-500 h-24 font-bengali text-lg"
+              placeholder="Primary definition in Bengali"
             />
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-slate-600">Detailed Description</label>
+            <label className="text-sm font-semibold text-slate-600">Detailed Description (বিবরণ)</label>
             <textarea 
               value={editingEntry.description}
               onChange={e => setEditingEntry({...editingEntry, description: e.target.value})}
-              className="w-full p-3 border border-slate-200 rounded-xl focus:border-primary-500 outline-none h-32 font-bengali"
+              className="w-full p-3 border border-slate-200 rounded-xl focus:border-primary-500 h-32 font-bengali"
             />
           </div>
 
-          <div className="space-y-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-slate-600">Synonyms</label>
+              <input 
+                value={editingEntry.synonyms.join(', ')}
+                onChange={e => setEditingEntry({...editingEntry, synonyms: e.target.value.split(',').map(s => s.trim())})}
+                className="w-full p-3 border border-slate-200 rounded-xl focus:border-primary-500"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-slate-600">Antonyms</label>
+              <input 
+                value={editingEntry.antonyms.join(', ')}
+                onChange={e => setEditingEntry({...editingEntry, antonyms: e.target.value.split(',').map(s => s.trim())})}
+                className="w-full p-3 border border-slate-200 rounded-xl focus:border-primary-500"
+              />
+            </div>
+          </div>
+           <div className="space-y-2">
             <label className="text-sm font-semibold text-slate-600">Examples (One per line)</label>
             <textarea 
               value={editingEntry.examples.join('\n')}
               onChange={e => setEditingEntry({...editingEntry, examples: e.target.value.split('\n')})}
-              className="w-full p-3 border border-slate-200 rounded-xl focus:border-primary-500 outline-none h-32 font-bengali"
-              placeholder="Example sentence 1&#10;Example sentence 2"
+              className="w-full p-3 border border-slate-200 rounded-xl focus:border-primary-500 h-32 font-bengali"
             />
-          </div>
-
-          <div className="grid grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-slate-600">Synonyms (Comma separated)</label>
-              <input 
-                value={editingEntry.synonyms.join(', ')}
-                onChange={e => setEditingEntry({...editingEntry, synonyms: e.target.value.split(',').map(s => s.trim())})}
-                className="w-full p-3 border border-slate-200 rounded-xl focus:border-primary-500 outline-none"
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-slate-600">Antonyms (Comma separated)</label>
-              <input 
-                value={editingEntry.antonyms.join(', ')}
-                onChange={e => setEditingEntry({...editingEntry, antonyms: e.target.value.split(',').map(s => s.trim())})}
-                className="w-full p-3 border border-slate-200 rounded-xl focus:border-primary-500 outline-none"
-              />
-            </div>
           </div>
         </div>
       </div>

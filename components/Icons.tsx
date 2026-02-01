@@ -10,7 +10,18 @@ import {
   ChevronRight,
   Loader2,
   Menu,
-  UserCog // Added for Admin
+  UserCog,
+  Bell,
+  Home,
+  Users,
+  FileText,
+  User,
+  Share2,
+  Copy,
+  GitBranch,
+  Split,
+  Feather,
+  MoveRight
 } from 'lucide-react';
 
 export { 
@@ -24,5 +35,16 @@ export {
   ChevronRight,
   Loader2,
   Menu,
-  UserCog
+  UserCog,
+  Bell,
+  Home,
+  Users,
+  FileText,
+  User,
+  Share2,
+  Copy,
+  GitBranch,
+  Split,
+  Feather,
+  MoveRight
 };
