@@ -1,6 +1,6 @@
 {
-  "name": "Borno (বর্ণ) - AI Dictionary",
-  "description": "An intelligent, bilingual (Bengali-English) dictionary powered by Gemini. Features detailed definitions, synonyms, antonyms, and usage examples.",
+  "name": "Borno (বর্ণ) - Dictionary Manager",
+  "description": "A comprehensive bilingual dictionary app with an Admin Dashboard for managing words and a user-friendly search interface. Features AI-assisted content generation.",
   "requestFramePermissions": [
     "microphone"
   ]

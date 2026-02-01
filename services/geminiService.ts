@@ -3,35 +3,35 @@ import { DictionaryEntry } from "../types";
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
-export const lookupWord = async (word: string): Promise<DictionaryEntry> => {
+// Renamed to reflect its new purpose: assisting the Admin
+export const generateEntryData = async (word: string): Promise<Omit<DictionaryEntry, 'id'>> => {
   const model = "gemini-3-flash-preview";
 
   const response = await ai.models.generateContent({
     model,
-    contents: `You are a comprehensive bilingual dictionary (English <-> Bengali). 
-    Provide a detailed dictionary entry for the word: "${word}".
+    contents: `You are a dictionary content generator. 
+    Create a detailed dictionary entry for the word: "${word}".
     
-    If the input is English, provide the Bengali meaning.
-    If the input is Bengali, provide the Bengali definition/elaboration.
+    If the input is English, provide Bengali translations.
+    If the input is Bengali, provide English translations where appropriate.
     
-    Ensure the 'meaning' is concise (one sentence), while 'description' provides more context or nuance.
-    'phonetic' should be the IPA pronunciation.
-    'examples' should include at least 2 sentences (with Bengali translations in parentheses).
+    Ensure the 'meaning' is concise.
+    'description' should be detailed.
     `,
     config: {
       responseMimeType: "application/json",
       responseSchema: {
         type: Type.OBJECT,
         properties: {
-          word: { type: Type.STRING, description: "The word being defined, properly capitalized or in script." },
-          phonetic: { type: Type.STRING, description: "IPA pronunciation guide" },
-          partOfSpeech: { type: Type.STRING, description: "Noun, Verb, Adjective, etc. (in Bengali script if possible, e.g., বিশেষ্য)" },
-          meaning: { type: Type.STRING, description: "Primary meaning in Bengali" },
-          description: { type: Type.STRING, description: "A slightly longer explanation or definition in Bengali" },
-          synonyms: { type: Type.ARRAY, items: { type: Type.STRING }, description: "List of synonyms (Bengali or English depending on context)" },
+          word: { type: Type.STRING, description: "The word, capitalized." },
+          phonetic: { type: Type.STRING, description: "IPA pronunciation" },
+          partOfSpeech: { type: Type.STRING, description: "e.g., Noun (বিশেষ্য)" },
+          meaning: { type: Type.STRING, description: "Primary meaning" },
+          description: { type: Type.STRING, description: "Detailed description" },
+          synonyms: { type: Type.ARRAY, items: { type: Type.STRING }, description: "List of synonyms" },
           antonyms: { type: Type.ARRAY, items: { type: Type.STRING }, description: "List of antonyms" },
-          examples: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Usage examples in sentences" },
-          origin: { type: Type.STRING, description: "Etymology or origin of the word (optional)" }
+          examples: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Bilingual example sentences" },
+          origin: { type: Type.STRING, description: "Etymology" }
         },
         required: ["word", "phonetic", "partOfSpeech", "meaning", "description", "synonyms", "examples"],
       },
@@ -41,5 +41,5 @@ export const lookupWord = async (word: string): Promise<DictionaryEntry> => {
   const text = response.text;
   if (!text) throw new Error("No response from AI");
 
-  return JSON.parse(text) as DictionaryEntry;
+  return JSON.parse(text) as Omit<DictionaryEntry, 'id'>;
 };

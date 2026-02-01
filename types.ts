@@ -1,4 +1,5 @@
 export interface DictionaryEntry {
+  id: string;
   word: string;
   phonetic: string;
   partOfSpeech: string;

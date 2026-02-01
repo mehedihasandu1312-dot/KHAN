@@ -9,7 +9,8 @@ import {
   X, 
   ChevronRight,
   Loader2,
-  Menu
+  Menu,
+  UserCog // Added for Admin
 } from 'lucide-react';
 
 export { 
@@ -22,5 +23,6 @@ export {
   X, 
   ChevronRight,
   Loader2,
-  Menu
+  Menu,
+  UserCog
 };
