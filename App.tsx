@@ -182,28 +182,30 @@ function App() {
         </button>
       </div>
 
-      {/* Prominent Search Bar */}
-      <div className="px-5 pb-2 pt-2 bg-white sticky top-[70px] z-20 shadow-sm border-b border-slate-50">
-        <div className={`relative group transition-all transform ${isListening ? 'scale-105' : ''}`}>
-          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-             <Search className="text-slate-400 group-focus-within:text-teal-600 transition-colors" size={20} />
+      {/* Prominent Search Bar - Hidden in details view */}
+      {view !== 'details' && (
+        <div className="px-5 pb-2 pt-2 bg-white sticky top-[70px] z-20 shadow-sm border-b border-slate-50">
+          <div className={`relative group transition-all transform ${isListening ? 'scale-105' : ''}`}>
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+               <Search className="text-slate-400 group-focus-within:text-teal-600 transition-colors" size={20} />
+            </div>
+            <input 
+              type="text"
+              placeholder={isListening ? "শুনছি..." : "কোন শব্দটি জানতে চান?"}
+              className={`w-full pl-11 pr-12 py-4 rounded-2xl bg-slate-100 focus:bg-white border-2 outline-none transition-all font-bengali text-lg placeholder:text-slate-400 shadow-inner ${isListening ? 'border-red-400 bg-red-50' : 'border-transparent focus:border-teal-500 shadow-teal-100/50'}`}
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+            />
+            
+            <button 
+              onClick={handleVoiceSearch}
+              className={`absolute right-3 top-1/2 -translate-y-1/2 p-2.5 rounded-xl transition-all ${isListening ? 'bg-red-500 text-white animate-pulse' : 'text-slate-400 hover:text-teal-600 hover:bg-white hover:shadow-sm'}`}
+            >
+              {isListening ? <Loader2 className="animate-spin" size={20} /> : <Mic size={20} />}
+            </button>
           </div>
-          <input 
-            type="text"
-            placeholder={isListening ? "শুনছি..." : "কোন শব্দটি জানতে চান?"}
-            className={`w-full pl-11 pr-12 py-4 rounded-2xl bg-slate-100 focus:bg-white border-2 outline-none transition-all font-bengali text-lg placeholder:text-slate-400 shadow-inner ${isListening ? 'border-red-400 bg-red-50' : 'border-transparent focus:border-teal-500 shadow-teal-100/50'}`}
-            value={query}
-            onChange={e => setQuery(e.target.value)}
-          />
-          
-          <button 
-            onClick={handleVoiceSearch}
-            className={`absolute right-3 top-1/2 -translate-y-1/2 p-2.5 rounded-xl transition-all ${isListening ? 'bg-red-500 text-white animate-pulse' : 'text-slate-400 hover:text-teal-600 hover:bg-white hover:shadow-sm'}`}
-          >
-            {isListening ? <Loader2 className="animate-spin" size={20} /> : <Mic size={20} />}
-          </button>
         </div>
-      </div>
+      )}
 
       <main className="flex-1 overflow-y-auto pb-32 bg-slate-50">
         {/* HOME VIEW */}
